@@ -1,7 +1,10 @@
 # COORDINATEZ
 
-Responsive storefront presentation for COORDINATEZ — Kyoto craft, modern ritual.
+Full-stack storefront for COORDINATEZ — Kyoto craft, modern ritual.
 
-The static experience includes desktop and mobile layouts, the full collection,
-product details and galleries, a persistent cart, checkout review, account,
-workshop registration, and contact flows.
+The live GitHub Pages frontend includes the full collection, product details,
+responsive interactions, real email/password accounts, unique customer IDs,
+cross-device carts, database-backed orders, workshop reservations, and contact
+records. Row-level security keeps customer data private.
+
+The editable application and database migration are included in `source/`.
