@@ -1,7 +1,7 @@
 # COORDINATEZ
 
-Responsive homepage presentation for COORDINATEZ — Kyoto craft, modern ritual.
+Responsive storefront presentation for COORDINATEZ — Kyoto craft, modern ritual.
 
-The static site includes desktop and mobile layouts, interactive product
-controls, a responsive menu, workshop and social sections, and a client contact
-form demo.
+The static experience includes desktop and mobile layouts, the full collection,
+product details and galleries, a persistent cart, checkout review, account,
+workshop registration, and contact flows.
