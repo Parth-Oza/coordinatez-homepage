@@ -5,6 +5,7 @@ import {
   ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -137,7 +138,7 @@ const products: Product[] = [
     name: "Whisk 150 prong.",
     category: "Tools",
     price: 20,
-    image: "./assets/whisk.webp",
+    image: "./assets/whisk-coordinatez.jpg",
     imageClass: "whisk-image",
     origin: "White bamboo",
     summary: "A fine-pronged chasen for a smooth, cloud-like foam.",
@@ -204,6 +205,40 @@ function go(route: string) {
   window.location.hash = route;
 }
 
+function BackgroundVideo({ context, lazy = false }: { context: string; lazy?: boolean }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [playing, setPlaying] = useState(true);
+
+  function togglePlayback() {
+    frame.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: playing ? "pauseVideo" : "playVideo", args: [] }),
+      "*",
+    );
+    setPlaying((value) => !value);
+  }
+
+  return (
+    <div className={`background-video background-video-${context}`}>
+      <iframe
+        ref={frame}
+        src="https://www.youtube-nocookie.com/embed/KlFXl--H8eM?autoplay=1&mute=1&controls=0&loop=1&playlist=KlFXl--H8eM&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&enablejsapi=1"
+        title={`${context} matcha preparation film`}
+        tabIndex={-1}
+        loading={lazy ? "lazy" : "eager"}
+        allow="autoplay; encrypted-media; picture-in-picture"
+      />
+      <button
+        className="media-toggle"
+        type="button"
+        aria-label={`${playing ? "Pause" : "Play"} background film`}
+        onClick={togglePlayback}
+      >
+        <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
+      </button>
+    </div>
+  );
+}
+
 function Header({
   cartCount,
   overlay = false,
@@ -221,7 +256,6 @@ function Header({
         </a>
         <nav className="desktop-nav" aria-label="Primary navigation">
           <a href={href("shop")}>Shop</a>
-          <a href={href("workshops")}>Workshops</a>
           <a href={href("contact")}>Contact</a>
           <a href={href("account")}>Login</a>
           <a href={href("cart")}>Cart ({cartCount})</a>
@@ -245,7 +279,6 @@ function Header({
       <div className={`mobile-menu ${open ? "open" : ""}`}>
         {[
           ["Shop", "shop"],
-          ["Workshops", "workshops"],
           ["Contact", "contact"],
           ["Account", "account"],
           [`Cart (${cartCount})`, "cart"],
@@ -296,9 +329,6 @@ function ProductImage({ product, className = "", image }: { product: Product; cl
       {product.badge && <span className="sale-badge">{product.badge}</span>}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image ?? product.image} alt={product.name} className="product-image" />
-      {product.imageClass === "whisk-image" && (
-        <span className="rebrand-label">COORDINATEZ</span>
-      )}
     </div>
   );
 }
@@ -393,8 +423,9 @@ function HomePage({
   return (
     <main>
       <section className="hero" id="top">
+        <BackgroundVideo context="hero" />
         <Header cartCount={cartCount} overlay />
-        <h1 className="hero-title">Every shade finds its match</h1>
+        <h1 className="hero-title"><span>Every shade</span><span>finds its</span><span>match</span></h1>
         <div className="hero-copy">
           <p className="hero-lede">
             COORDINATEZ was created from a simple idea — matcha deserves to be
@@ -517,6 +548,7 @@ function HomeContact({ onContact }: { onContact: (payload: ContactPayload) => Pr
   }
   return (
     <section className="contact section-pad" id="contact">
+      <BackgroundVideo context="contact" lazy />
       <div className="contact-blur blur-one" />
       <div className="contact-blur blur-two" />
       <div className="contact-intro">
@@ -608,7 +640,8 @@ function ProductPage({
             <div className="gallery-thumbs" aria-label="Gallery thumbnails">
               {gallery.map((galleryImage, index) => (
                 <button type="button" key={`${galleryImage}-${index}`} className={selectedImage === galleryImage ? "active" : ""} aria-label={`Image ${index + 1}`} onClick={() => setSelectedImage(galleryImage)}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}<img src={galleryImage} alt="" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={galleryImage} alt="" />
                 </button>
               ))}
             </div>
@@ -667,7 +700,8 @@ function CartPage({
                 const product = productBySlug(line.slug);
                 return (
                   <article className="cart-line" key={line.slug}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={product.image} alt={product.name} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={product.image} alt={product.name} />
                     <div className="cart-line-copy"><p className="eyebrow">{product.category}</p><h2><a href={href(`product/${product.slug}`)}>{product.name}</a></h2><p>{money.format(product.price)}</p></div>
                     <div className="cart-line-actions"><Quantity value={line.quantity} onChange={(quantity) => setQuantity(line.slug, quantity)} /><button type="button" onClick={() => remove(line.slug)}>Remove</button></div>
                     <strong>{money.format(product.price * line.quantity)}</strong>
@@ -752,7 +786,20 @@ function CheckoutPage({
                 <button className="pill place-order" type="submit" disabled={busy}>{busy ? "Saving order" : "Place order"}</button>
               </form>
               <aside className="checkout-summary">
-                {cart.map((line) => { const product = productBySlug(line.slug); return <div className="checkout-item" key={line.slug}><div><img src={product.image} alt="" /><span>{line.quantity}</span></div><p>{product.name}</p><strong>{money.format(product.price * line.quantity)}</strong></div>; })}
+                {cart.map((line) => {
+                  const product = productBySlug(line.slug);
+                  return (
+                    <div className="checkout-item" key={line.slug}>
+                      <div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={product.image} alt="" />
+                        <span>{line.quantity}</span>
+                      </div>
+                      <p>{product.name}</p>
+                      <strong>{money.format(product.price * line.quantity)}</strong>
+                    </div>
+                  );
+                })}
                 <div><span>Subtotal</span><span>{money.format(subtotal)}</span></div><div><span>Shipping</span><span>{shipping ? money.format(shipping) : "Free"}</span></div><div className="summary-total"><span>Total</span><span>{money.format(subtotal + shipping)}</span></div>
               </aside>
             </div>
@@ -803,7 +850,11 @@ function WorkshopsPage({
     <PageShell cartCount={cartCount}>
       <section className="workshops-page">
         <div className="workshops-hero section-pad"><p className="eyebrow">Inside our Chicago shop</p><h1>Learn.<br />Whisk.<br />Taste.</h1><p>A focused introduction to traditional matcha preparation, sourcing and flavor — made welcoming for every experience level.</p><a className="pill" href="#workshop-register">Reserve a seat</a></div>
-        <div className="workshops-story section-pad"><img src="./assets/workshop-room.webp" alt="A quiet Japanese tea room" /><div><p className="eyebrow green">The experience</p><h2>Slow down for one bowl.</h2><p>Over 75 minutes, our tea guide walks a small group through sifting, water temperature, whisking and mindful tasting.</p><ul><li>Taste two Kyoto matcha profiles</li><li>Prepare your own traditional bowl</li><li>Take home a preparation guide</li></ul></div></div>
+        <div className="workshops-story section-pad">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="./assets/workshop-room.webp" alt="A quiet Japanese tea room" />
+          <div><p className="eyebrow green">The experience</p><h2>Slow down for one bowl.</h2><p>Over 75 minutes, our tea guide walks a small group through sifting, water temperature, whisking and mindful tasting.</p><ul><li>Taste two Kyoto matcha profiles</li><li>Prepare your own traditional bowl</li><li>Take home a preparation guide</li></ul></div>
+        </div>
         <div className="sessions section-pad"><h2 className="section-kicker green">Upcoming sessions</h2><div className="session-grid">{[["Saturday, August 15","10:00 AM"],["Sunday, August 23","11:30 AM"],["Saturday, September 5","2:00 PM"]].map(([date,time], index) => <article key={date}><span>{String(index + 1).padStart(2,"0")}</span><h3>{date}</h3><p>{time} · 75 minutes</p><a href="#workshop-register">Select</a></article>)}</div></div>
         <div className="workshop-register section-pad" id="workshop-register"><div><p className="eyebrow">Complimentary · 8 seats per session</p><h2>Reserve your place.</h2><p>Choose a preferred date and we’ll hold your seat. Workshop attendance is complimentary.</p></div><form onSubmit={register}><label>Name<input name="attendeeName" required autoComplete="name" /></label><label>Email<input name="email" defaultValue={user?.email ?? ""} required type="email" autoComplete="email" /></label><label>Preferred session<select name="sessionLabel" required defaultValue=""><option value="" disabled>Select a date</option><option>August 15 · 10:00 AM</option><option>August 23 · 11:30 AM</option><option>September 5 · 2:00 PM</option></select></label><button className="pill" type="submit" disabled={busy}>{!user ? "Sign in to reserve" : busy ? "Saving request" : "Request a seat"}</button>{registered && <p role="status">Your seat request is saved to your account.</p>}{error && <p className="form-error" role="alert">{error}</p>}</form></div>
       </section>
@@ -1019,6 +1070,48 @@ export default function Storefront() {
   useEffect(() => {
     if (ready && !user) window.localStorage.setItem("coordinatez-cart", JSON.stringify(cart));
   }, [cart, ready, user]);
+
+  useEffect(() => {
+    const selectors = [
+      ".section-kicker",
+      ".home-product-grid .product-card",
+      ".shop-all",
+      ".workshop-heading-row > *",
+      ".workshop-grid > *",
+      ".learn > *",
+      ".about-grid > *",
+      ".tea-fields",
+      ".social-title",
+      ".social-grid > *",
+      ".social-button",
+      ".contact-intro",
+      ".contact-form",
+      ".footer > *",
+    ].join(",");
+    const elements = Array.from(document.querySelectorAll<HTMLElement>(selectors));
+    if (!elements.length) return;
+
+    document.documentElement.classList.add("motion-ready");
+    elements.forEach((element, index) => {
+      element.dataset.reveal = "";
+      element.style.setProperty("--reveal-delay", `${(index % 4) * 70}ms`);
+    });
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      elements.forEach((element) => element.dataset.visible = "true");
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        (entry.target as HTMLElement).dataset.visible = "true";
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [route]);
 
   const cartCount = useMemo(() => cart.reduce((sum, line) => sum + line.quantity, 0), [cart]);
 
