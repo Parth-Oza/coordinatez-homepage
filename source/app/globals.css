@@ -101,19 +101,21 @@ img {
   justify-content: center;
   border: 0;
   border-radius: 999px;
-  background: var(--light-green);
+  background: linear-gradient(110deg, var(--light-green) 0 50%, #157d3b 50% 100%);
+  background-position: 0 0;
+  background-size: 205% 100%;
   color: #fff;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
   text-transform: uppercase;
   box-shadow: inset 0 0 0 1px rgba(21, 86, 38, 0.12);
-  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 220ms ease, background 220ms ease, box-shadow 220ms ease;
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 220ms ease, background-position 320ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms ease;
 }
 
 .pill:hover,
 .pill:focus-visible {
-  background: #188742;
+  background-position: 100% 0;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), 0 12px 30px rgba(21, 92, 40, 0.2);
   filter: none;
   transform: translateY(-3px) scale(1.01);
@@ -138,29 +140,54 @@ img {
     linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.26));
 }
 
-.background-video {
+.matcha-film {
   position: absolute;
   inset: 0;
   overflow: hidden;
   background: inherit;
-  container-type: size;
 }
 
-.background-video iframe {
+.matcha-film-reel,
+.matcha-film-reel img,
+.matcha-film-grain {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: max(100cqw, 177.78cqh);
-  min-width: 100%;
-  height: max(100cqh, 56.25cqw);
-  min-height: 100%;
-  border: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(1.02);
+  inset: 0;
 }
 
-.background-video-hero iframe {
-  transform: translate(-50%, -50%) scale(1.12);
+.matcha-film-reel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.035);
+  animation: matcha-film-cycle 24s calc(var(--film-index) * -8s) infinite both;
+  will-change: opacity, transform;
+}
+
+.matcha-film-hero .matcha-film-reel img:nth-child(1) {
+  object-position: center 58%;
+}
+
+.matcha-film-hero .matcha-film-reel img:nth-child(2) {
+  object-position: center 55%;
+}
+
+.matcha-film-hero .matcha-film-reel img:nth-child(3) {
+  object-position: center;
+}
+
+.matcha-film-grain {
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.3) 0 0.6px, transparent 0.9px),
+    radial-gradient(circle at 72% 68%, rgba(0, 0, 0, 0.35) 0 0.55px, transparent 0.85px);
+  background-size: 5px 5px, 7px 7px;
+  mix-blend-mode: soft-light;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.matcha-film.is-paused img {
+  animation-play-state: paused;
 }
 
 .media-toggle {
@@ -276,6 +303,36 @@ img {
   animation-delay: 200ms;
 }
 
+.hero-scroll {
+  position: absolute;
+  z-index: 3;
+  bottom: 30px;
+  left: 4vw;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-scroll span {
+  display: block;
+  width: 42px;
+  height: 1px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.hero-scroll span::after {
+  display: block;
+  width: 100%;
+  height: 1px;
+  content: "";
+  background: #fff;
+  animation: scroll-line 2.2s ease-in-out infinite;
+}
+
 .hero-copy {
   position: absolute;
   z-index: 2;
@@ -339,6 +396,16 @@ img {
   transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 320ms ease;
 }
 
+.product-image-glow {
+  position: absolute;
+  z-index: 1;
+  inset: -25%;
+  background: linear-gradient(118deg, transparent 37%, rgba(255, 255, 255, 0.42) 49%, transparent 61%);
+  pointer-events: none;
+  transform: translateX(-68%) rotate(7deg);
+  transition: transform 720ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 .product-card:first-child .product-image {
   object-fit: contain;
 }
@@ -370,6 +437,10 @@ img {
   .product-card:hover .product-image {
     filter: saturate(1.04) contrast(1.015);
     transform: scale(1.035);
+  }
+
+  .product-card:hover .product-image-glow {
+    transform: translateX(68%) rotate(7deg);
   }
 }
 
@@ -452,19 +523,58 @@ img {
   gap: 8.5vw;
 }
 
-.workshop-grid > img,
+.workshop-tile,
 .poster-card {
   width: 100%;
   height: 425px;
-  object-fit: cover;
   transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 360ms ease;
 }
 
+.workshop-tile {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #dfe2d4;
+}
+
+.workshop-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 360ms ease;
+}
+
+.workshop-tile figcaption {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: rgba(239, 238, 232, 0.88);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  transform: translateY(calc(100% + 18px));
+  transition: transform 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 @media (hover: hover) {
-  .workshop-grid > img:hover,
+  .workshop-tile:hover,
   .poster-card:hover {
     filter: saturate(1.04);
     transform: translateY(-6px) scale(1.012);
+  }
+
+  .workshop-tile:hover img {
+    filter: saturate(1.08) contrast(1.02);
+    transform: scale(1.055);
+  }
+
+  .workshop-tile:hover figcaption {
+    transform: translateY(0);
   }
 }
 
@@ -659,6 +769,23 @@ img {
   transition: opacity 280ms ease;
 }
 
+.social-grid a::before {
+  position: absolute;
+  z-index: 2;
+  right: 13px;
+  bottom: 13px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(245, 244, 239, 0.9);
+  content: attr(data-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  text-transform: uppercase;
+  transform: translateY(8px);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
 .social-grid img {
   width: 100%;
   height: 238px;
@@ -672,6 +799,11 @@ img {
 
 .social-grid a:hover::after {
   opacity: 1;
+}
+
+.social-grid a:hover::before {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .social-button {
@@ -708,14 +840,13 @@ img {
   background: rgba(64, 157, 83, 0.66);
 }
 
-.background-video-contact {
+.matcha-film-contact {
   background: #4da058;
 }
 
-.background-video-contact iframe {
+.matcha-film-contact .matcha-film-reel img {
   filter: blur(12px) saturate(1.25);
-  opacity: 0.7;
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: scale(1.13);
 }
 
 .contact-blur {
@@ -751,7 +882,7 @@ img {
   z-index: 3;
 }
 
-.background-video-contact .media-toggle {
+.matcha-film-contact .media-toggle {
   z-index: 5;
 }
 
@@ -784,8 +915,7 @@ img {
 }
 
 .contact-form legend {
-  float: left;
-  width: 100%;
+  grid-column: 1 / -1;
   margin-bottom: 5px;
 }
 
@@ -913,7 +1043,7 @@ img {
 
 /* Motion */
 .motion-ready [data-reveal] {
-  opacity: 0;
+  opacity: 1;
   transform: translateY(34px);
   transition: opacity 680ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 680ms cubic-bezier(0.2, 0.7, 0.2, 1);
   transition-delay: var(--reveal-delay, 0ms);
@@ -944,6 +1074,20 @@ main {
 @keyframes contact-drift {
   from { translate: -2% -1%; scale: 0.98; }
   to { translate: 3% 2%; scale: 1.04; }
+}
+
+@keyframes matcha-film-cycle {
+  0% { opacity: 1; transform: scale(1.035) translate3d(0, 0, 0); }
+  27% { opacity: 1; transform: scale(1.105) translate3d(-1.2%, -0.8%, 0); }
+  34% { opacity: 0; transform: scale(1.13) translate3d(-1.8%, -1.1%, 0); }
+  94% { opacity: 0; transform: scale(1.035) translate3d(0.8%, 0.5%, 0); }
+  100% { opacity: 1; transform: scale(1.035) translate3d(0, 0, 0); }
+}
+
+@keyframes scroll-line {
+  0% { transform: translateX(-105%); }
+  48%, 58% { transform: translateX(0); }
+  100% { transform: translateX(105%); }
 }
 
 /* Shared interior pages */
@@ -2292,17 +2436,17 @@ main {
     gap: 10px;
   }
 
-  .workshop-grid > img,
+  .workshop-tile,
   .poster-card {
     height: 223px;
   }
 
-  .workshop-grid > img:first-child {
+  .workshop-tile:first-child {
     grid-column: 1;
     grid-row: 1;
   }
 
-  .workshop-grid > img:nth-of-type(2) {
+  .workshop-tile:nth-of-type(2) {
     grid-column: 2;
     grid-row: 1;
   }
@@ -2807,8 +2951,13 @@ main {
     transform: none;
   }
 
-  .background-video iframe {
-    display: none;
+  .matcha-film-reel img {
+    animation: none;
+    opacity: 0;
+  }
+
+  .matcha-film-reel img:first-child {
+    opacity: 1;
   }
 
   .media-toggle {

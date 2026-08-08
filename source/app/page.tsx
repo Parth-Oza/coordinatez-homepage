@@ -5,7 +5,6 @@ import {
   ReactNode,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -95,7 +94,7 @@ const products: Product[] = [
     category: "Matcha",
     price: 59,
     originalPrice: 65,
-    image: "./assets/social-matcha.webp",
+    image: "./assets/social-latte.webp",
     badge: "Sale",
     origin: "Uji, Kyoto",
     summary: "A vivid ceremonial grade with rounded umami and a clean finish.",
@@ -178,7 +177,7 @@ const products: Product[] = [
     name: "Storage Tin (Small 30g size)",
     category: "Tools",
     price: 13,
-    image: "./assets/social-shop.webp",
+    image: "./assets/social-powder.webp",
     origin: "Airtight double lid",
     summary: "A compact countertop tin for everyday matcha.",
     description: [
@@ -205,33 +204,40 @@ function go(route: string) {
   window.location.hash = route;
 }
 
-function BackgroundVideo({ context, lazy = false }: { context: string; lazy?: boolean }) {
-  const frame = useRef<HTMLIFrameElement>(null);
+function MatchaFilm({ context, lazy = false }: { context: "hero" | "contact"; lazy?: boolean }) {
   const [playing, setPlaying] = useState(true);
-
-  function togglePlayback() {
-    frame.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "command", func: playing ? "pauseVideo" : "playVideo", args: [] }),
-      "*",
-    );
-    setPlaying((value) => !value);
-  }
+  const slides = context === "hero"
+    ? [
+        ["./assets/tea-fields.webp", "Shade-grown tea fields in Kyoto"],
+        ["./assets/whisking.webp", "Traditional bamboo whisk preparing matcha"],
+        ["./assets/social-powder.webp", "Freshly milled ceremonial matcha"],
+      ]
+    : [
+        ["./assets/social-latte.webp", "Iced matcha being poured"],
+        ["./assets/social-powder.webp", "Ceremonial matcha powder"],
+        ["./assets/whisking.webp", "Matcha whisking ritual"],
+      ];
 
   return (
-    <div className={`background-video background-video-${context}`}>
-      <iframe
-        ref={frame}
-        src="https://www.youtube-nocookie.com/embed/KlFXl--H8eM?autoplay=1&mute=1&controls=0&loop=1&playlist=KlFXl--H8eM&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&cc_load_policy=0&enablejsapi=1"
-        title={`${context} matcha preparation film`}
-        tabIndex={-1}
-        loading={lazy ? "lazy" : "eager"}
-        allow="autoplay; encrypted-media; picture-in-picture"
-      />
+    <div className={`matcha-film matcha-film-${context} ${playing ? "is-playing" : "is-paused"}`}>
+      <div className="matcha-film-reel" aria-hidden="true">
+        {slides.map(([src, alt], index) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={src}
+            src={src}
+            alt={alt}
+            loading={lazy ? "lazy" : index === 0 ? "eager" : "lazy"}
+            style={{ "--film-index": index } as React.CSSProperties}
+          />
+        ))}
+      </div>
+      <span className="matcha-film-grain" aria-hidden="true" />
       <button
         className="media-toggle"
         type="button"
         aria-label={`${playing ? "Pause" : "Play"} background film`}
-        onClick={togglePlayback}
+        onClick={() => setPlaying((value) => !value)}
       >
         <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
       </button>
@@ -329,6 +335,7 @@ function ProductImage({ product, className = "", image }: { product: Product; cl
       {product.badge && <span className="sale-badge">{product.badge}</span>}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image ?? product.image} alt={product.name} className="product-image" />
+      <span className="product-image-glow" aria-hidden="true" />
     </div>
   );
 }
@@ -423,7 +430,7 @@ function HomePage({
   return (
     <main>
       <section className="hero" id="top">
-        <BackgroundVideo context="hero" />
+        <MatchaFilm context="hero" />
         <Header cartCount={cartCount} overlay />
         <h1 className="hero-title"><span>Every shade</span><span>finds its</span><span>match</span></h1>
         <div className="hero-copy">
@@ -441,6 +448,7 @@ function HomePage({
             A moment of clarity in a busy day.
           </p>
         </div>
+        <a className="hero-scroll" href="#products"><span />Explore the ritual</a>
       </section>
 
       <section className="products section-pad" id="products">
@@ -459,15 +467,21 @@ function HomePage({
           <a className="pill register-desktop" href={href("workshops")}>Register</a>
         </div>
         <div className="workshop-grid">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="./assets/workshop-shade.webp" alt="Swirling green matcha" />
+          <figure className="workshop-tile">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="./assets/workshop-shade.webp" alt="Swirling green matcha" />
+            <figcaption>Every shade finds its match</figcaption>
+          </figure>
           <div className="poster-card" aria-label="COORDINATEZ workshop registration">
             <span className="poster-brand">COORDINATEZ workshop</span>
             <strong>New<br />dates</strong>
             <span className="poster-note">Free matcha workshop</span>
           </div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="./assets/workshop-room.webp" alt="Traditional Japanese tea room" />
+          <figure className="workshop-tile">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="./assets/workshop-room.webp" alt="Traditional Japanese tea room" />
+            <figcaption>Kyoto craft, modern ritual</figcaption>
+          </figure>
           <a className="register-mobile" href={href("workshops")}>Register</a>
         </div>
       </section>
@@ -501,12 +515,12 @@ function HomePage({
         <h2 className="social-title">Follow us on social</h2>
         <div className="social-grid">
           {[
-            ["./assets/social-matcha.webp", "Fresh ceremonial matcha"],
             ["./assets/social-latte.webp", "Iced matcha latte"],
             ["./assets/social-powder.webp", "Bowls of bright matcha powder"],
-            ["./assets/social-shop.webp", "Minimal COORDINATEZ shop interior"],
+            ["./assets/whisking.webp", "Traditional matcha whisking"],
+            ["./assets/tea-fields.webp", "Shade-grown tea fields in Kyoto"],
           ].map(([src, alt]) => (
-            <a href={href("shop")} key={src} aria-label={alt}>
+            <a href={href("shop")} key={src} aria-label={alt} data-label="View ritual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt={alt} />
             </a>
@@ -548,7 +562,7 @@ function HomeContact({ onContact }: { onContact: (payload: ContactPayload) => Pr
   }
   return (
     <section className="contact section-pad" id="contact">
-      <BackgroundVideo context="contact" lazy />
+      <MatchaFilm context="contact" lazy />
       <div className="contact-blur blur-one" />
       <div className="contact-blur blur-two" />
       <div className="contact-intro">
