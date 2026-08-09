@@ -539,6 +539,23 @@ function HomeContact({ onContact }: { onContact: (payload: ContactPayload) => Pr
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function moveLight(event: React.PointerEvent<HTMLElement>) {
+    if (event.pointerType === "touch") return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+    event.currentTarget.style.setProperty("--cursor-x", `${x}%`);
+    event.currentTarget.style.setProperty("--cursor-y", `${y}%`);
+    event.currentTarget.dataset.pointerActive = "true";
+  }
+
+  function resetLight(event: React.PointerEvent<HTMLElement>) {
+    event.currentTarget.style.setProperty("--cursor-x", "54%");
+    event.currentTarget.style.setProperty("--cursor-y", "48%");
+    event.currentTarget.dataset.pointerActive = "false";
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -561,10 +578,17 @@ function HomeContact({ onContact }: { onContact: (payload: ContactPayload) => Pr
     }
   }
   return (
-    <section className="contact section-pad" id="contact">
+    <section
+      className="contact section-pad"
+      id="contact"
+      onPointerMove={moveLight}
+      onPointerLeave={resetLight}
+      data-pointer-active="false"
+    >
       <MatchaFilm context="contact" lazy />
       <div className="contact-blur blur-one" />
       <div className="contact-blur blur-two" />
+      <div className="contact-cursor-light" aria-hidden="true"><span /></div>
       <div className="contact-intro">
         <h2 className="display">Work with COORDINATEZ</h2>
         <p>We love collaborating with people and brands who value quality and creativity.</p>

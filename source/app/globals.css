@@ -821,6 +821,8 @@ img {
 
 /* Contact */
 .contact {
+  --cursor-x: 54%;
+  --cursor-y: 48%;
   position: relative;
   display: grid;
   min-height: 878px;
@@ -857,6 +859,51 @@ img {
   filter: blur(25px);
   opacity: 0.76;
   animation: contact-drift 11s ease-in-out infinite alternate;
+}
+
+.contact-cursor-light {
+  position: absolute;
+  z-index: 2;
+  left: var(--cursor-x);
+  top: var(--cursor-y);
+  width: clamp(320px, 36vw, 540px);
+  aspect-ratio: 1;
+  border-radius: 46% 54% 62% 38% / 39% 42% 58% 61%;
+  background:
+    radial-gradient(circle at 42% 38%, rgba(255, 255, 247, 0.98) 0 11%, rgba(234, 243, 224, 0.9) 26%, rgba(167, 217, 150, 0.5) 52%, transparent 72%);
+  filter: blur(20px);
+  mix-blend-mode: screen;
+  opacity: 0.66;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.82) rotate(-7deg);
+  transition:
+    left 260ms cubic-bezier(0.16, 0.72, 0.22, 1),
+    top 260ms cubic-bezier(0.16, 0.72, 0.22, 1),
+    opacity 320ms ease,
+    transform 420ms cubic-bezier(0.16, 0.72, 0.22, 1);
+  animation: cursor-blob-morph 7s ease-in-out infinite alternate;
+  will-change: left, top, transform, border-radius;
+}
+
+.contact-cursor-light span {
+  position: absolute;
+  inset: 19%;
+  border: 1px solid rgba(241, 255, 232, 0.62);
+  border-radius: 50%;
+  box-shadow: 0 0 42px rgba(232, 255, 220, 0.38), inset 0 0 34px rgba(255, 255, 255, 0.22);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 280ms ease, transform 520ms cubic-bezier(0.16, 0.72, 0.22, 1);
+}
+
+.contact[data-pointer-active="true"] .contact-cursor-light {
+  opacity: 0.92;
+  transform: translate(-50%, -50%) scale(1) rotate(6deg);
+}
+
+.contact[data-pointer-active="true"] .contact-cursor-light span {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .blur-one {
@@ -938,6 +985,7 @@ img {
   border-radius: 26px;
   outline: 0;
   background: rgba(236, 235, 228, 0.15);
+  transition: background 220ms ease, box-shadow 220ms ease, transform 220ms ease;
 }
 
 .contact-form input {
@@ -953,7 +1001,14 @@ img {
 
 .contact-form input:focus,
 .contact-form textarea:focus {
+  background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.contact-form input:hover,
+.contact-form textarea:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
 }
 
 .form-footer {
@@ -1074,6 +1129,18 @@ main {
 @keyframes contact-drift {
   from { translate: -2% -1%; scale: 0.98; }
   to { translate: 3% 2%; scale: 1.04; }
+}
+
+@keyframes cursor-blob-morph {
+  0% {
+    border-radius: 46% 54% 62% 38% / 39% 42% 58% 61%;
+  }
+  50% {
+    border-radius: 58% 42% 39% 61% / 51% 63% 37% 49%;
+  }
+  100% {
+    border-radius: 39% 61% 54% 46% / 64% 41% 59% 36%;
+  }
 }
 
 @keyframes matcha-film-cycle {
@@ -2961,6 +3028,17 @@ main {
   }
 
   .media-toggle {
+    display: none;
+  }
+
+  .contact-cursor-light {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .contact-cursor-light {
     display: none;
   }
 }
